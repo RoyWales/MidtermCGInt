@@ -16,6 +16,8 @@
 #include <RendererComponent.h>
 #include <TextureCubeMap.h>
 #include <TextureCubeMapData.h>
+#include "Graphics/Post/PostEffect.h"
+#include "Graphics/BloomEffect.h"
 
 #include <Timing.h>
 #include <GameObjectTag.h>
@@ -34,6 +36,17 @@ int main() {
 	float minFps, maxFps, avgFps;
 	int selectedVao = 0; // select cube by default
 	
+	float x = -2;
+	float val = 0.01;
+	bool left = true;
+
+	float z = 0;
+	float val2 = 0.01;
+	bool up = true;
+
+	float w = 0;
+	float val3 = 0.1;
+	bool w1 = true;
 
 	bool opt1 = false; //options for lighting
 	bool opt2 = false;
@@ -52,14 +65,19 @@ int main() {
 
 	// Let OpenGL know that we want debug output, and route it to our handler function
 	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(BackendHandler::GlDebugMessage, nullptr);
+	glDebugMessageCallback(BackendHandler::GlDebugMessage, nullptr); 
 
 	// Enable texturing
 	glEnable(GL_TEXTURE_2D);
-
+	 
 	// Push another scope so most memory should be freed *before* we exit the app
 	{
 		#pragma region Shader and ImGui
+
+		/*Shader::sptr passthroughShader = Shader::Create();
+		passthroughShader->LoadShaderPartFromFile("shaders/passthrough_vert.glsl", GL_VERTEX_SHADER);
+		passthroughShader->LoadShaderPartFromFile("shaders/passthrough_frag.glsl", GL_FRAGMENT_SHADER);
+		passthroughShader->Link();*/
 
 		// Load our shaders
 		Shader::sptr shader = Shader::Create();
@@ -73,7 +91,7 @@ int main() {
 		float     lightSpecularPow = 2.0f;
 		glm::vec3 ambientCol = glm::vec3(1.0f);  
 		float     ambientPow = 0.4f; 
-		float     lightLinearFalloff = 0.06f; 
+		float     lightLinearFalloff = 0.06f;  
 		float     lightQuadraticFalloff = 0.02f;
 
 		// These are our application / scene level uniforms that don't necessarily update
@@ -169,7 +187,7 @@ int main() {
 				opt5 = false;  
 				opt6 = false;
 			}
-			if (ImGui::Checkbox("Specular Only", &opt3))
+			if (ImGui::Checkbox("Specular Only", &opt3)) 
 			{
 				opt2 = false;
 				opt1 = false;
@@ -270,7 +288,6 @@ int main() {
 		Texture2D::sptr White = Texture2D::LoadFromFile("images/White.png");
 		Texture2D::sptr Flat = Texture2D::LoadFromFile("images/Flat.png");
 		Texture2D::sptr Umbrella = Texture2D::LoadFromFile("images/Umbrella1.png");
-		//Texture2D::sptr diffuse2 = Texture2D::LoadFromFile("images/White.png");
 		Texture2D::sptr specular = Texture2D::LoadFromFile("images/White.png");
 		Texture2D::sptr HeightMap = Texture2D::LoadFromFile("images/HeightMap.png");
 
@@ -315,6 +332,7 @@ int main() {
 		SandMaterial->Set("u_Shininess", 8.0f);
 		SandMaterial->Set("u_TextureMix", 0.5f);
 		SandMaterial->Set("s_HeightMap", HeightMap);
+
 
 		ShaderMaterial::sptr BlueMaterial = ShaderMaterial::Create();
 		BlueMaterial->Shader = shader;
@@ -428,6 +446,16 @@ int main() {
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj11);
 		}
 
+
+		GameObject obj15 = scene->CreateEntity("Moving SurfBoard");
+		{
+
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/SurfBoard1.obj");
+			obj15.emplace<RendererComponent>().SetMesh(vao).SetMaterial(Surf2Material);
+			obj15.get<Transform>().SetLocalPosition(0.0f, -15.0f, 0.0f).SetLocalRotation(glm::vec3(0, -90, 180));
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj15);
+		}
+
 		GameObject obj3 = scene->CreateEntity("SurfBoard");
 		{
 
@@ -486,7 +514,7 @@ int main() {
 			obj8.get<Transform>().SetLocalPosition(6.0f, -1.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 0));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj8);
 		}
-
+		
 		
 
 		/*
@@ -540,6 +568,26 @@ int main() {
 		}
 
 		#pragma endregion 
+
+
+		int width, height;
+		glfwGetWindowSize(BackendHandler::window, &width, &height);
+
+		PostEffect* basicEffect;
+		BloomEffect* bloomEffect;
+
+		GameObject framebufferObject = scene->CreateEntity("Basic effect");
+		{
+			basicEffect = &framebufferObject.emplace<PostEffect>();
+			basicEffect->Init(width, height);
+		}
+
+		GameObject bloomObj = scene->CreateEntity("Bloom Effect");
+		{
+			bloomEffect = &bloomObj.emplace<BloomEffect>();
+			bloomEffect->Init(width, height);
+		}
+
 		//////////////////////////////////////////////////////////////////////////////////////////
 
 		/////////////////////////////////// SKYBOX ///////////////////////////////////////////////
@@ -621,6 +669,64 @@ int main() {
 			if (frameIx >= 128)
 				frameIx = 0;
 			
+			
+			x = x + val;
+
+			if (x >= 2.0)
+			{
+				left = false;
+			}
+			if (x <= -2.0)
+			{
+				left = true;
+			}
+
+			if (left)
+			{
+				val = 0.01;
+			}
+			else
+				val = -0.01;
+
+			z = z + val2;
+
+			if (z >= 0.5)
+			{
+				up = false;
+			}
+			if (z <= 0)
+			{
+				up = true;
+			}
+
+			if (up)
+			{
+				val2 = 0.005;
+			}
+			else
+				val2 = -0.005;
+
+			w = w + val3;
+
+			if (w >= 10)
+			{
+				w1 = false;
+			}
+			if (w <= -10)
+			{
+				w1 = true;
+			}
+
+			if (w1)
+			{
+				val3 = 0.1;
+			}
+			else
+				val3 = -0.1;
+			
+
+			obj15.get<Transform>().SetLocalPosition(x, -15.0f, z).SetLocalRotation(glm::vec3(w, -90, 180));
+
 
 			// We'll make sure our UI isn't focused before we start handling input for our game
 			if (!ImGui::IsAnyWindowFocused()) {
@@ -641,6 +747,9 @@ int main() {
 					}
 				}
 			});
+
+			//basicEffect->Clear();
+			//bloomEffect->Clear();
 
 			// Clear the screen
 			glClearColor(0.08f, 0.17f, 0.31f, 1.0f);
@@ -683,6 +792,8 @@ int main() {
 			Shader::sptr current = nullptr;
 			ShaderMaterial::sptr currentMat = nullptr;
 
+			//basicEffect->BindBuffer(0);
+
 			// Iterate over the render group components and draw them
 			renderGroup.each( [&](entt::entity e, RendererComponent& renderer, Transform& transform) {
 				// If the shader has changed, set up it's uniforms
@@ -699,6 +810,12 @@ int main() {
 				// Render the mesh
 				BackendHandler::RenderVAO(renderer.Material->Shader, renderer.Mesh, viewProjection, transform);
 			});
+			
+			/*basicEffect->UnbindBuffer();
+			
+			bloomEffect->ApplyEffect(basicEffect);
+			bloomEffect->DrawToScreen();*/
+
 			
 			// Draw our ImGui content
 			BackendHandler::RenderImGui();

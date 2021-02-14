@@ -5,6 +5,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "Graphics/BloomEffect.h"
 
 #include <Transform.h>
 #include <VertexArrayObject.h>
