@@ -40,6 +40,11 @@ int main() {
 	bool opt3 = false;
 	bool opt4 = true;
 	bool opt5 = false;
+	bool opt6 = false;
+	bool Textures = true;
+	bool HeightM = true;
+	float Threshold = 0.5;
+	float BlurVal = 0.5;
 
 	std::vector<GameObject> controllables;
 
@@ -83,7 +88,7 @@ int main() {
 		shader->SetUniform("u_LightAttenuationLinear", lightLinearFalloff);
 		shader->SetUniform("u_LightAttenuationQuadratic", lightQuadraticFalloff);
 
-	/*	//new shader for height map
+		//new shader for height map
 		Shader::sptr HeightShader = Shader::Create();
 		HeightShader->LoadShaderPartFromFile("shaders/vertex_shaderHeight.glsl", GL_VERTEX_SHADER);
 		HeightShader->LoadShaderPartFromFile("shaders/frag_blinn_phong_textured.glsl", GL_FRAGMENT_SHADER);
@@ -97,7 +102,7 @@ int main() {
 		HeightShader->SetUniform("u_AmbientStrength", ambientPow);
 		HeightShader->SetUniform("u_LightAttenuationConstant", 1.0f);
 		HeightShader->SetUniform("u_LightAttenuationLinear", lightLinearFalloff);
-		HeightShader->SetUniform("u_LightAttenuationQuadratic", lightQuadraticFalloff);*/
+		HeightShader->SetUniform("u_LightAttenuationQuadratic", lightQuadraticFalloff);
 
 		// We'll add some ImGui controls to control our shader
 		BackendHandler::imGuiCallbacks.push_back([&]() {
@@ -136,25 +141,33 @@ int main() {
 			shader->SetUniform("u_opt3", (int)opt3);
 			shader->SetUniform("u_opt4", (int)opt4);
 			shader->SetUniform("u_opt5", (int)opt5);
-			//HeightShader->SetUniform("u_opt1", (int)opt1); //options for lighting
-			//HeightShader->SetUniform("u_opt2", (int)opt2);
-			//HeightShader->SetUniform("u_opt3", (int)opt3);
-			//HeightShader->SetUniform("u_opt4", (int)opt4);
-			//HeightShader->SetUniform("u_opt5", (int)opt5);
+			shader->SetUniform("u_opt6", (int)opt6);
+			shader->SetUniform("Textures", (int)Textures);
+			shader->SetUniform("HeightM", (int)HeightM);
+			HeightShader->SetUniform("u_opt1", (int)opt1); //options for lighting
+			HeightShader->SetUniform("u_opt2", (int)opt2);
+			HeightShader->SetUniform("u_opt3", (int)opt3);
+			HeightShader->SetUniform("u_opt4", (int)opt4);
+			HeightShader->SetUniform("u_opt5", (int)opt5);
+			HeightShader->SetUniform("u_opt6", (int)opt6);
+			HeightShader->SetUniform("Textures", (int)Textures);
+			HeightShader->SetUniform("HeightM", (int)HeightM);
 
-			if (ImGui::Checkbox("No Lighting", &opt1))
+			if (ImGui::Checkbox("No Lighting", &opt1)) 
 			{
 				opt2 = false; 
 				opt3 = false; 
 				opt4 = false;
 				opt5 = false;
+				opt6 = false;
 			}
 			if (ImGui::Checkbox("Ambient Only", &opt2))
 			{
 				opt1 = false;
 				opt3 = false;
 				opt4 = false;
-				opt5 = false;     
+				opt5 = false;  
+				opt6 = false;
 			}
 			if (ImGui::Checkbox("Specular Only", &opt3))
 			{
@@ -162,32 +175,63 @@ int main() {
 				opt1 = false;
 				opt4 = false;
 				opt5 = false;
+				opt6 = false;
 			}
 			if (ImGui::Checkbox("Specular, Ambient, and Diffuse", &opt4))
 			{
 				opt2 = false;
 				opt3 = false;
 				opt1 = false;
-				opt5 = false;
+				opt5 = false; 
+				opt6 = false;
 			} 
-			if (ImGui::Checkbox("Specular, Ambient, Diffuse and OutLine", &opt5))
+			if (ImGui::Checkbox("Specular, Ambient, and Bloom", &opt6))
+			{
+				opt2 = false;
+				opt3 = false;
+				opt4 = false;
+				opt1 = false;
+				opt5 = false;
+			}
+			if (ImGui::Checkbox("Specular, Ambient, and Toon Shading", &opt5))    
 			{ 
 				opt2 = false;   
 				opt3 = false;
 				opt4 = false;
 				opt1 = false;   
+				opt6 = false;
 			} 
+			if (ImGui::Checkbox("Textures On", &Textures)) //for etxtures on/off
+			{
+				
+			}
+			if (ImGui::Checkbox("Height Map", &HeightM)) //for heightmap on/off
+			{
 
-			shader->SetUniform("u_opt1", (int)opt1); 
+			}
+			if (ImGui::SliderFloat("Brightness Threshold", &Threshold, 0.01f, 1.0f)) {
+				shader->SetUniform("u_Threshold", Threshold);
+			}
+			if (ImGui::SliderFloat("Blur Value", &BlurVal, 0.01f, 1.0f)) {
+				shader->SetUniform("u_BlurVal", BlurVal);
+			}
+
+			shader->SetUniform("u_opt1", (int)opt1); //options for lighting
 			shader->SetUniform("u_opt2", (int)opt2);
 			shader->SetUniform("u_opt3", (int)opt3);
 			shader->SetUniform("u_opt4", (int)opt4);
 			shader->SetUniform("u_opt5", (int)opt5);
-			/*HeightShader->SetUniform("u_opt1", (int)opt1); //options for lighting
+			shader->SetUniform("u_opt6", (int)opt6);
+			shader->SetUniform("Textures", (int)Textures);
+			shader->SetUniform("HeightM", (int)HeightM);
+			HeightShader->SetUniform("u_opt1", (int)opt1); //options for lighting
 			HeightShader->SetUniform("u_opt2", (int)opt2);
 			HeightShader->SetUniform("u_opt3", (int)opt3);
 			HeightShader->SetUniform("u_opt4", (int)opt4);
-			HeightShader->SetUniform("u_opt5", (int)opt5);*/
+			HeightShader->SetUniform("u_opt5", (int)opt5);
+			HeightShader->SetUniform("u_opt6", (int)opt6);
+			HeightShader->SetUniform("Textures", (int)Textures);
+			HeightShader->SetUniform("HeightM", (int)HeightM);
 /*
 			auto name = controllables[selectedVao].get<GameObjectTag>().Name;
 			ImGui::Text(name.c_str());
@@ -218,17 +262,16 @@ int main() {
 		#pragma region TEXTURE LOADING
 
 		// Load some textures from files
-		Texture2D::sptr Car2 = Texture2D::LoadFromFile("images/Car2-Blue.png");
-		Texture2D::sptr Tree = Texture2D::LoadFromFile("images/Tree.png");
-		Texture2D::sptr Rock = Texture2D::LoadFromFile("images/Rock.png");
-		Texture2D::sptr Railing = Texture2D::LoadFromFile("images/Railing.png");
-		Texture2D::sptr Grass = Texture2D::LoadFromFile("images/sand.jpg");
-		//Texture2D::sptr Road = Texture2D::LoadFromFile("images/Road.png");
-
-		Texture2D::sptr diffuse2 = Texture2D::LoadFromFile("images/box.bmp");
+		Texture2D::sptr Sand = Texture2D::LoadFromFile("images/Sand2.jpg");
+		Texture2D::sptr Surf = Texture2D::LoadFromFile("images/Surf.png");
+		Texture2D::sptr Surf1 = Texture2D::LoadFromFile("images/Surf1.png");
+		Texture2D::sptr Surf2 = Texture2D::LoadFromFile("images/Surf2.png");
+		Texture2D::sptr Blue = Texture2D::LoadFromFile("images/Blue.png");
+		Texture2D::sptr White = Texture2D::LoadFromFile("images/White.png");
+		Texture2D::sptr Flat = Texture2D::LoadFromFile("images/Flat.png");
+		Texture2D::sptr Umbrella = Texture2D::LoadFromFile("images/Umbrella1.png");
+		//Texture2D::sptr diffuse2 = Texture2D::LoadFromFile("images/White.png");
 		Texture2D::sptr specular = Texture2D::LoadFromFile("images/White.png");
-		Texture2D::sptr reflectivity = Texture2D::LoadFromFile("images/box-reflections.bmp");
-
 		Texture2D::sptr HeightMap = Texture2D::LoadFromFile("images/HeightMap.png");
 
 		// Load the cube map
@@ -264,41 +307,63 @@ int main() {
 
 		//materials
 		// Create a material and set some properties for it
-		ShaderMaterial::sptr CarMaterial = ShaderMaterial::Create();  
-		CarMaterial->Shader = shader;
-		CarMaterial->Set("s_Diffuse", Car2);
-		CarMaterial->Set("s_Specular", specular);
-		CarMaterial->Set("u_Shininess", 8.0f);
-		CarMaterial->Set("u_TextureMix", 0.5f);
+		ShaderMaterial::sptr SandMaterial = ShaderMaterial::Create();  
+		SandMaterial->Shader = HeightShader;
+		SandMaterial->Set("s_Diffuse", Sand);
+		SandMaterial->Set("s_Diffuse3", Flat);
+		SandMaterial->Set("s_Specular", specular);
+		SandMaterial->Set("u_Shininess", 8.0f);
+		SandMaterial->Set("u_TextureMix", 0.5f);
+		SandMaterial->Set("s_HeightMap", HeightMap);
 
-		ShaderMaterial::sptr RockMaterial = ShaderMaterial::Create();
-		RockMaterial->Shader = shader;
-		RockMaterial->Set("s_Diffuse", Rock);
-		RockMaterial->Set("s_Specular", specular);
-		RockMaterial->Set("u_Shininess", 8.0f);
-		RockMaterial->Set("u_TextureMix", 0.5f);
+		ShaderMaterial::sptr BlueMaterial = ShaderMaterial::Create();
+		BlueMaterial->Shader = shader;
+		BlueMaterial->Set("s_Diffuse", Blue);
+		BlueMaterial->Set("s_Diffuse3", Flat);
+		BlueMaterial->Set("s_Specular", specular);
+		BlueMaterial->Set("u_Shininess", 8.0f);
+		BlueMaterial->Set("u_TextureMix", 0.5f);
 
-		ShaderMaterial::sptr TreeMaterial = ShaderMaterial::Create();
-		TreeMaterial->Shader = shader;
-		TreeMaterial->Set("s_Diffuse", Tree);
-		TreeMaterial->Set("s_Specular", specular);
-		TreeMaterial->Set("u_Shininess", 8.0f);
-		TreeMaterial->Set("u_TextureMix", 0.5f);
+		ShaderMaterial::sptr WhiteMaterial = ShaderMaterial::Create();
+		WhiteMaterial->Shader = shader;
+		WhiteMaterial->Set("s_Diffuse", White);
+		WhiteMaterial->Set("s_Diffuse3", Flat);
+		WhiteMaterial->Set("s_Specular", specular);
+		WhiteMaterial->Set("u_Shininess", 8.0f);
+		WhiteMaterial->Set("u_TextureMix", 0.5f);
 
-		ShaderMaterial::sptr RailingMaterial = ShaderMaterial::Create();
-		RailingMaterial->Shader = shader;
-		RailingMaterial->Set("s_Diffuse", Rock);
-		RailingMaterial->Set("s_Specular", specular);
-		RailingMaterial->Set("u_Shininess", 8.0f);
-		RailingMaterial->Set("u_TextureMix", 0.5f);
+		ShaderMaterial::sptr SurfMaterial = ShaderMaterial::Create();
+		SurfMaterial->Shader = shader;
+		SurfMaterial->Set("s_Diffuse", Surf);
+		SurfMaterial->Set("s_Diffuse3", Flat);
+		SurfMaterial->Set("s_Specular", specular);
+		SurfMaterial->Set("u_Shininess", 8.0f);
+		SurfMaterial->Set("u_TextureMix", 0.5f);
+
+		ShaderMaterial::sptr Surf1Material = ShaderMaterial::Create();
+		Surf1Material->Shader = shader;
+		Surf1Material->Set("s_Diffuse", Surf1);
+		Surf1Material->Set("s_Diffuse3", Flat);        
+		Surf1Material->Set("s_Specular", specular);
+		Surf1Material->Set("u_Shininess", 8.0f);
+		Surf1Material->Set("u_TextureMix", 0.5f);
+
+		ShaderMaterial::sptr Surf2Material = ShaderMaterial::Create();
+		Surf2Material->Shader = shader;
+		Surf2Material->Set("s_Diffuse", Surf2);
+		Surf2Material->Set("s_Diffuse3", Flat);
+		Surf2Material->Set("s_Specular", specular);
+		Surf2Material->Set("u_Shininess", 8.0f);
+		Surf2Material->Set("u_TextureMix", 0.5f);
 		
-		ShaderMaterial::sptr GrassMaterial = ShaderMaterial::Create();
-		GrassMaterial->Shader = shader;
-		GrassMaterial->Set("s_Diffuse", Grass);
-		GrassMaterial->Set("s_Specular", specular);
-		GrassMaterial->Set("u_Shininess", 8.0f);
-		GrassMaterial->Set("u_TextureMix", 0.5f);
-		GrassMaterial->Set("s_HeightMap", HeightMap);    
+		ShaderMaterial::sptr UmbrellaMaterial = ShaderMaterial::Create();
+		UmbrellaMaterial->Shader = shader;
+		UmbrellaMaterial->Set("s_Diffuse", Umbrella);
+		UmbrellaMaterial->Set("s_Diffuse3", Flat);
+		UmbrellaMaterial->Set("s_Specular", specular);
+		UmbrellaMaterial->Set("u_Shininess", 8.0f);
+		UmbrellaMaterial->Set("u_TextureMix", 0.5f);
+		
 
 
 		// 
@@ -331,17 +396,17 @@ int main() {
 		{
 
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Plane.obj");
-			obj0.emplace<RendererComponent>().SetMesh(vao).SetMaterial(GrassMaterial);
-			obj0.get<Transform>().SetLocalPosition(0.f, 0.0f, 0.0f).SetLocalScale(20, 15, 1); ///////////////////////////////////////////
+			obj0.emplace<RendererComponent>().SetMesh(vao).SetMaterial(SandMaterial);
+			obj0.get<Transform>().SetLocalPosition(0.f, 0.0f, -0.8f).SetLocalScale(20, 15, 1); ///////////////////////////////////////////
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj0); 
 		}
 
-		/*GameObject obj2 = scene->CreateEntity("Chair");
+		GameObject obj2 = scene->CreateEntity("Chair");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Chair1.obj");
 			//VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Chair1.obj");
-			obj2.emplace<RendererComponent>().SetMesh(vao).SetMaterial(CarMaterial); //change mat
-			obj2.get<Transform>().SetLocalPosition(0.0f, -2.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 180)).SetLocalScale(glm::vec3(1.5, 1.5, 1.5));
+			obj2.emplace<RendererComponent>().SetMesh(vao).SetMaterial(WhiteMaterial); //change mat
+			obj2.get<Transform>().SetLocalPosition(-0.5f, -2.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 0)).SetLocalScale(glm::vec3(1.8, 1.8, 1.8));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj2);
 		}
 
@@ -349,16 +414,25 @@ int main() {
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Chair1.obj");
 			//VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Chair1.obj");
-			obj10.emplace<RendererComponent>().SetMesh(vao).SetMaterial(CarMaterial); //change mat
-			obj10.get<Transform>().SetLocalPosition(4.0f, -2.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 180)).SetLocalScale(glm::vec3(1.5, 1.5, 1.5));
+			obj10.emplace<RendererComponent>().SetMesh(vao).SetMaterial(WhiteMaterial); //change mat
+			obj10.get<Transform>().SetLocalPosition(4.0f, -2.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 0)).SetLocalScale(glm::vec3(1.8, 1.8, 1.8));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj10);
-		}*/
+		}
+
+		GameObject obj11 = scene->CreateEntity("Chair");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Chair1.obj");
+			//VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Chair1.obj");
+			obj11.emplace<RendererComponent>().SetMesh(vao).SetMaterial(WhiteMaterial); //change mat
+			obj11.get<Transform>().SetLocalPosition(2.0f, -2.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 0)).SetLocalScale(glm::vec3(1.8, 1.8, 1.8));
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj11);
+		}
 
 		GameObject obj3 = scene->CreateEntity("SurfBoard");
 		{
 
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/SurfBoard1.obj");
-			obj3.emplace<RendererComponent>().SetMesh(vao).SetMaterial(TreeMaterial);
+			obj3.emplace<RendererComponent>().SetMesh(vao).SetMaterial(SurfMaterial);
 			obj3.get<Transform>().SetLocalPosition(-6.0f, -6.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 90));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj3);
 		}
@@ -367,7 +441,7 @@ int main() {
 		{
 
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/SurfBoard1.obj");
-			obj6.emplace<RendererComponent>().SetMesh(vao).SetMaterial(TreeMaterial);
+			obj6.emplace<RendererComponent>().SetMesh(vao).SetMaterial(Surf1Material);
 			obj6.get<Transform>().SetLocalPosition(6.0f, -8.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 0));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj6);
 		}
@@ -376,7 +450,7 @@ int main() {
 		{
 
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/SurfBoard1.obj");
-			obj7.emplace<RendererComponent>().SetMesh(vao).SetMaterial(TreeMaterial);
+			obj7.emplace<RendererComponent>().SetMesh(vao).SetMaterial(Surf2Material);
 			obj7.get<Transform>().SetLocalPosition(7.0f, -7.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 0));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj7);
 		}
@@ -384,7 +458,7 @@ int main() {
 		GameObject obj4 = scene->CreateEntity("Cooler");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Cooler1.obj");
-			obj4.emplace<RendererComponent>().SetMesh(vao).SetMaterial(RockMaterial);
+			obj4.emplace<RendererComponent>().SetMesh(vao).SetMaterial(BlueMaterial);
 			obj4.get<Transform>().SetLocalPosition(-3.0f, -2.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 90)).SetLocalScale(glm::vec3(0.7, 0.7, 0.7));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj4);
 		}
@@ -392,7 +466,7 @@ int main() {
 		GameObject obj9 = scene->CreateEntity("Cooler");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Cooler1.obj");
-			obj9.emplace<RendererComponent>().SetMesh(vao).SetMaterial(RockMaterial);
+			obj9.emplace<RendererComponent>().SetMesh(vao).SetMaterial(BlueMaterial);
 			obj9.get<Transform>().SetLocalPosition(7.0f, -2.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 90)).SetLocalScale(glm::vec3(0.7, 0.7, 0.7));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj9);
 		}
@@ -400,7 +474,7 @@ int main() {
 		GameObject obj5 = scene->CreateEntity("Umbrella");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Umbrella1.obj");
-			obj5.emplace<RendererComponent>().SetMesh(vao).SetMaterial(RockMaterial);
+			obj5.emplace<RendererComponent>().SetMesh(vao).SetMaterial(UmbrellaMaterial);
 			obj5.get<Transform>().SetLocalPosition(-2.0f, -1.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 0));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj5);
 		}
@@ -408,7 +482,7 @@ int main() {
 		GameObject obj8 = scene->CreateEntity("Umbrella");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Umbrella1.obj");
-			obj8.emplace<RendererComponent>().SetMesh(vao).SetMaterial(RockMaterial);
+			obj8.emplace<RendererComponent>().SetMesh(vao).SetMaterial(UmbrellaMaterial);
 			obj8.get<Transform>().SetLocalPosition(6.0f, -1.0f, 0.0f).SetLocalRotation(glm::vec3(90, 0, 0));
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj8);
 		}
@@ -494,7 +568,7 @@ int main() {
 		////////////////////////////////////////////////////////////////////////////////////////
 
 
-		// We'll use a vector to store all our key press events for now (this should probably be a behaviour eventually)
+	/*	// We'll use a vector to store all our key press events for now (this should probably be a behaviour eventually)
 		std::vector<KeyPressWatcher> keyToggles;
 		{
 			// This is an example of a key press handling helper. Look at InputHelpers.h an .cpp to see
@@ -525,7 +599,7 @@ int main() {
 				auto behaviour = BehaviourBinding::Get<SimpleMoveBehaviour>(controllables[selectedVao]);
 				behaviour->Relative = !behaviour->Relative;
 				});
-		}
+		}*/
 
 		// Initialize our timing instance and grab a reference for our use
 		Timing& time = Timing::Instance();
@@ -553,9 +627,9 @@ int main() {
 				// We need to poll our key watchers so they can do their logic with the GLFW state
 				// Note that since we want to make sure we don't copy our key handlers, we need a const
 				// reference!
-				for (const KeyPressWatcher& watcher : keyToggles) {
-					watcher.Poll(BackendHandler::window);
-				}
+				//for (const KeyPressWatcher& watcher : keyToggles) {
+				//	watcher.Poll(BackendHandler::window);
+				//}
 			}
 
 			// Iterate over all the behaviour binding components

@@ -11,9 +11,13 @@ uniform bool u_opt2;
 uniform bool u_opt3;
 uniform bool u_opt4;
 uniform bool u_opt5;
+uniform bool u_opt6;
+uniform bool Textures;
+
 
 uniform sampler2D s_Diffuse;
 uniform sampler2D s_Diffuse2;
+uniform sampler2D s_Diffuse3;
 uniform sampler2D s_Specular;
 
 uniform vec3  u_AmbientCol;
@@ -35,6 +39,9 @@ uniform float u_TextureMix;
 uniform vec3  u_CamPos;
 
 out vec4 frag_color;
+
+const int bands = 5;
+const float scaleFactor = 1.0/bands;
 
 // https://learnopengl.com/Advanced-Lighting/Advanced-Lighting
 void main() {
@@ -65,9 +72,22 @@ void main() {
 	vec3 specular = u_SpecularLightStrength * texSpec * spec * u_LightCol; // Can also use a specular color
 
 	// Get the albedo from the diffuse / albedo map
-	vec4 textureColor1 = texture(s_Diffuse, inUV);
-	vec4 textureColor2 = texture(s_Diffuse2, inUV);
-	vec4 textureColor = mix(textureColor1, textureColor2, u_TextureMix);
+	vec4 textureColor1;
+	vec4 textureColor2;
+	vec4 textureColor;
+
+	if (Textures == true) 
+	{
+	textureColor1 = texture(s_Diffuse, inUV);
+	textureColor2 = texture(s_Diffuse2, inUV);
+	textureColor = mix(textureColor1, textureColor2, u_TextureMix);
+	}
+	if (Textures == false) 
+	{
+	textureColor1 = texture(s_Diffuse3, inUV);
+	textureColor2 = texture(s_Diffuse3, inUV);
+	textureColor = mix(textureColor1, textureColor2, u_TextureMix);
+	}
 
 	vec3 result; //create result variable
 
@@ -94,14 +114,22 @@ void main() {
 			) * inColor * textureColor.rgb; // Object color
 	}
 
-	if (u_opt5 == true) //amb, spec, diff + Outline
+	if (u_opt5 == true) //amb, spec, + toon
 	{
-		float edge = (dot(viewDir, N) < 0.3) ? 0.0 : 1.0;
-
+		diffuse = floor(diffuse * bands) * scaleFactor; //toon shading
+		
 		result = (
 			(u_AmbientCol * u_AmbientStrength) + // global ambient light
 			(ambient + diffuse + specular) * attenuation // light factors from our single light
-			) * inColor * textureColor.rgb * edge; // Object color
+			) * inColor * textureColor.rgb; // Object color
+	}
+
+	if (u_opt6 == true) //amb, spec, BLOOM 
+	{
+		result = (
+			(u_AmbientCol * u_AmbientStrength) + // global ambient light
+			(ambient + diffuse + specular) * attenuation // light factors from our single light
+			) * inColor * textureColor.rgb; // Object color
 	}
 
 	frag_color = vec4(result, textureColor.a);

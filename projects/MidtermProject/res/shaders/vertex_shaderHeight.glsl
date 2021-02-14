@@ -18,6 +18,9 @@ uniform vec3 u_LightPos;
 
 uniform sampler2D s_HeightMap;
 
+uniform bool HeightM;
+
+
 
 void main() {
 
@@ -35,10 +38,14 @@ void main() {
 
 	vec3 vert = inPosition;
 
-	vert.z = texture(s_HeightMap, inUV).r;
-
-	float height = vert.z;
-
+	if (HeightM == true) //height map toggle
+	{
+		vert.z = texture(s_HeightMap, inUV).r;
+		float height = vert.z;
+	}
+	else
+		vert = inPosition;
+	
 	gl_Position = u_ModelViewProjection * vec4(vert, 1.0);
 
 }
